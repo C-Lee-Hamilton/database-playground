@@ -8,6 +8,10 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { useState } from "react"
+import { doCreateUserWithEmailAndPassword } from "@/firebase/auth"
+// import { useAuth } from "@/contexts/authcontexts"
+
 
 type PageType = "main" | "signup" | "login";
 type PageProps = {
@@ -18,6 +22,20 @@ type PageProps = {
 
 export default function SignupCard ({ setActivePage,setTrigger,trigger }: PageProps){
 const loginPageNav=()=>{setActivePage("login");setTrigger(false);}
+const [email,setEmail]=useState<string>('');
+const [password,setPassword]=useState<string>('');
+
+const onSubmitFire=async(e:React.MouseEvent<HTMLButtonElement>)=>{e.preventDefault();
+    try{
+    await doCreateUserWithEmailAndPassword({email,password});
+    setActivePage("login");setTrigger(false);
+    console.log("user created");} catch(err){
+        console.error("Failed to create user:", err);
+    }
+}
+
+const emailUpdate=(e:React.ChangeEvent<HTMLInputElement>)=>(setEmail(e.target.value));
+const pwUpdate=(e:React.ChangeEvent<HTMLInputElement>)=>setPassword(e.target.value);
 
  const headerStyle = `flex flex-1 m-auto h-[auto]  bg-slate-200 shadow-lg border-2 max-w-sm ${
   trigger ?  "border-red-500 shadow-red-600" : "border-green-500 shadow-green-600" 
@@ -40,6 +58,8 @@ return(
                     type="email"
                     placeholder="m@example.com"
                     required
+                    value={email}
+                    onChange={emailUpdate}
                     className="border-black border-2"
                     />
                 </div>
@@ -48,13 +68,13 @@ return(
                     <Label htmlFor="password">Password</Label>
                 
                     </div>
-                    <Input className="border-black border-2" id="password" type="password" required />
+                    <Input className="border-black border-2" id="password" value={password} onChange={pwUpdate}type="password" required />
                 </div>
                 </div>
             </form>
           </CardContent>
         <CardFooter className="flex-col gap-2">
-            <Button onClick={loginPageNav} variant="outline" className="w-full bg-red-400 cursor-pointer">
+            <Button onClick={onSubmitFire} variant="outline" className="w-full bg-red-400 cursor-pointer">
                 Create Firebase Account
             </Button>
             <Button onClick={loginPageNav} variant="destructive" className="w-full cursor-pointer">
