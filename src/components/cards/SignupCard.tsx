@@ -21,7 +21,7 @@ type PageProps = {
 };
 
 export default function SignupCard ({ setActivePage,setTrigger,trigger }: PageProps){
-const loginPageNav=()=>{setActivePage("login");setTrigger(false);}
+// const loginPageNav=()=>{setActivePage("login");setTrigger(false);}
 const [email,setEmail]=useState<string>('');
 const [password,setPassword]=useState<string>('');
 
@@ -33,6 +33,31 @@ const onSubmitFire=async(e:React.MouseEvent<HTMLButtonElement>)=>{e.preventDefau
         console.error("Failed to create user:", err);
     }
 }
+
+const onSubmitMongo = async (e: React.MouseEvent<HTMLButtonElement>) => {
+  e.preventDefault();
+  try {
+    const response = await fetch("http://localhost:3001/api/auth/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error("Mongo signup failed:", data.message);
+    } else {
+      console.log("Mongo user created:", data);
+      setActivePage("login");
+      setTrigger(false);
+    }
+  } catch (err) {
+    console.error("Error hitting Mongo signup endpoint:", err);
+  }
+};
 
 const emailUpdate=(e:React.ChangeEvent<HTMLInputElement>)=>(setEmail(e.target.value));
 const pwUpdate=(e:React.ChangeEvent<HTMLInputElement>)=>setPassword(e.target.value);
@@ -77,7 +102,7 @@ return(
             <Button onClick={onSubmitFire} variant="outline" className="w-full bg-red-400 cursor-pointer">
                 Create Firebase Account
             </Button>
-            <Button onClick={loginPageNav} variant="destructive" className="w-full cursor-pointer">
+            <Button onClick={onSubmitMongo} variant="destructive" className="w-full cursor-pointer">
                 Create Mongo Account
             </Button>
         </CardFooter>

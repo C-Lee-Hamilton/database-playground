@@ -8,6 +8,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { useState } from "react"
 
 type PageType = "main" | "signup" | "login";
 type PageProps = {
@@ -15,8 +16,50 @@ type PageProps = {
 };
 
 export default function MongoCard ({ setActivePage }: PageProps){
+const [email,setEmail]=useState<string>('');
+const [password,setPassword]=useState<string>('');
+
+
+const emailUpdate=(e:React.ChangeEvent<HTMLInputElement>)=>(setEmail(e.target.value));
+const pwUpdate=(e:React.ChangeEvent<HTMLInputElement>)=>setPassword(e.target.value);
+
 const mainPageNav=()=>{setActivePage("main");}
 const signupNav=()=>{setActivePage("signup");}
+
+
+const onLoginMongo = async (e: React.MouseEvent<HTMLButtonElement>) => {
+  e.preventDefault();
+  try {
+    const response = await fetch("http://localhost:3001/api/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error("Mongo login failed:", data.message);
+    } else {
+      console.log("Mongo user logged in:", data);
+      // Optionally: Save the token somewhere (localStorage, context, etc)
+      localStorage.setItem("mongoToken", data.token);
+      mainPageNav(); // boom, takes you to the main UI
+    }
+  } catch (err) {
+    console.error("Error hitting Mongo login endpoint:", err);
+  }
+};
+
+
+
+
+
+
+
+
 return(
 
     
@@ -30,6 +73,8 @@ return(
                         <div className="grid gap-2">
                         <Label htmlFor="email">Email</Label>
                         <Input
+                            value={email}
+                            onChange={emailUpdate}
                             id="email"
                             type="email"
                             placeholder="m@example.com"
@@ -42,18 +87,16 @@ return(
                             <Label htmlFor="password">Password</Label>
                         
                         </div>
-                        <Input className="border-black border-2" id="password" type="password" required />
+                        <Input value={password} onChange={pwUpdate} className="border-black border-2" id="password" type="password" required />
                         </div>
                     </div>
                 </form>
             </CardContent>
         <CardFooter className="flex-col gap-2">
-            <Button onClick={mainPageNav} type="submit" className="w-full cursor-pointer">
+            <Button onClick={onLoginMongo} type="submit" className="w-full cursor-pointer">
             Login
             </Button>
-            <Button variant="outline" className="w-full cursor-pointer">
-            Login with Google
-            </Button>
+          
             <Button onClick={signupNav} variant="destructive" className="w-full border-2 border-black cursor-pointer">
             Sign Up
             </Button>

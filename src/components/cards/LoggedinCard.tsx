@@ -23,7 +23,32 @@ type PageProps = {
 };
 
 export default function LoggedinCard ({ setActivePage,setTrigger,trigger }: PageProps){
-const loginPageNav=()=>{try{doSignOut();setActivePage("login");setTrigger(false);console.log("logged out");}catch(err){console.log("failed",err)}}
+
+const doSignOutMongo=()=>{
+  {
+  try {
+    localStorage.removeItem("mongoToken"); // Clear the token
+    console.log("Mongo logout successful");
+  } catch (err) {
+    console.error("Mongo logout failed:", err);
+  }
+}
+}
+
+const loginPageNav = () => {
+  try {
+    if (trigger) {
+      doSignOut(); 
+    } else {
+      doSignOutMongo(); 
+    }
+    setActivePage("login");
+    setTrigger(false);
+    console.log("logged out");
+  } catch (err) {
+    console.log("failed", err);
+  }
+};
 const colorStyle=`flex flex-1 m-auto h-[auto] shadow-lg border-2 max-w-sm
   ${trigger ?  "border-red-500 shadow-red-600" : "border-green-500 shadow-green-600"}` 
 const buttonStyle=`w-full border-2  border-black cursor-pointer ${trigger ?"bg-red-400":"green-600"}`
@@ -32,25 +57,24 @@ const [animal,setAnimal]=useState<string>("");
 const [fetchedAnimal,setFetchedAnimal]=useState<string>("");
 const [fetched,setFetched]=useState<boolean>(false);
 const {currentUser}=useAuth();
+
 const animalUpdate=(e:React.ChangeEvent<HTMLInputElement>)=>(setAnimal(e.target.value));
-// const submitAnimal=()=>{console.log(animal);}
 
-  const submitAnimal = async () => {
-    if (!currentUser) return;
+const submitAnimalFire = async () => {
+  if (!currentUser) return;
 
-    try {
-      await setDoc(doc(db, "users", currentUser.uid), {
-        favoriteAnimal: animal,
-      }, { merge: true });
+  try {
+    await setDoc(doc(db, "users", currentUser.uid), {
+      favoriteAnimal: animal,
+    }, { merge: true });
 
-      console.log("Animal saved.");
-    } catch (err) {
-      console.error("Error saving animal:", err);
-    }
-  };
+    console.log("Animal saved.");
+  } catch (err) {
+    console.error("Error saving animal:", err);
+  }
+};
 
-  
-const getAnimal = async () => {
+const getAnimalFire = async () => {
   if (!currentUser) return;
 
   try {
@@ -69,6 +93,66 @@ const getAnimal = async () => {
   }
 };
 
+const getAnimalMongo = async () => {
+  try {
+    const token = localStorage.getItem("mongoToken");
+    if (!token) throw new Error("No token found.");
+
+    const response = await fetch("http://localhost:3001/api/users/animal", {
+      method: "GET", // Use GET for fetching
+      headers: {
+        Authorization: `Bearer ${token}`, // Just the auth header, no Content-Type needed
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error("Failed to fetch animal:", data.message);
+    } else {
+      setFetchedAnimal(data.animal);
+      setFetched(true);
+      console.log("Mongo animal fetched:", data.animal);
+    }
+  } catch (err) {
+    console.error("Mongo error fetching animal:", err);
+  }
+};
+const submitAnimalMongo = async () => {
+  try {
+    const token = localStorage.getItem("mongoToken");
+    if (!token) throw new Error("No token found.");
+
+    const response = await fetch("http://localhost:3001/api/users/animal", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ animal }),
+    });
+
+    const text = await response.text(); // always works, even on non-JSON
+    console.log("Raw response:", text);
+
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (jsonError) {
+      console.error("JSON parse failed. Server returned non-JSON:", text);
+      return;
+    }
+
+    if (response.ok) {
+      console.log("Animal updated:", data);
+    } else {
+      console.error("Failed to update animal:", data.message || data);
+    }
+  } catch (err) {
+    console.error("Mongo error submitting animal:", err);
+  }
+};
+
 return(
     <Card className={colorStyle}>
         <CardHeader>
@@ -84,7 +168,7 @@ return(
                       required
                       className="border-black border-2"
                     />  
-                    <Button  type="submit" onClick={submitAnimal}className="w-full cursor-pointer">
+                    <Button  type="submit" onClick={trigger ? submitAnimalFire:submitAnimalMongo}className="w-full cursor-pointer">
               
                 Submit Favorite Animal
             </Button>
@@ -92,7 +176,7 @@ return(
            
             </CardContent>
         <CardFooter className="flex-col gap-2">
-          <Button onClick={getAnimal} variant="outline" className={buttonStyle}>
+          <Button onClick={trigger ? getAnimalFire : getAnimalMongo} variant="outline" className={buttonStyle}>
             Fetch Favorite Animal
             </Button>
             <Button onClick={loginPageNav} variant="destructive" className={buttonStyle}>
