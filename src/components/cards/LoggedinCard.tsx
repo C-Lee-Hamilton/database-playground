@@ -27,7 +27,7 @@ export default function LoggedinCard ({ setActivePage,setTrigger,trigger }: Page
 const doSignOutMongo=()=>{
   {
   try {
-    localStorage.removeItem("mongoToken"); // Clear the token
+    localStorage.removeItem("mongoToken");
     console.log("Mongo logout successful");
   } catch (err) {
     console.error("Mongo logout failed:", err);
@@ -99,9 +99,9 @@ const getAnimalMongo = async () => {
     if (!token) throw new Error("No token found.");
 
     const response = await fetch("http://localhost:3001/api/users/animal", {
-      method: "GET", // Use GET for fetching
+      method: "GET",
       headers: {
-        Authorization: `Bearer ${token}`, // Just the auth header, no Content-Type needed
+        Authorization: `Bearer ${token}`, 
       },
     });
 
@@ -132,7 +132,7 @@ const submitAnimalMongo = async () => {
       body: JSON.stringify({ animal }),
     });
 
-    const text = await response.text(); // always works, even on non-JSON
+    const text = await response.text(); 
     console.log("Raw response:", text);
 
     let data;

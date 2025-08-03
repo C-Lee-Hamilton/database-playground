@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useState } from "react"
 import { doCreateUserWithEmailAndPassword } from "@/firebase/auth"
-// import { useAuth } from "@/contexts/authcontexts"
+
 
 
 type PageType = "main" | "signup" | "login";
@@ -21,7 +21,7 @@ type PageProps = {
 };
 
 export default function SignupCard ({ setActivePage,setTrigger,trigger }: PageProps){
-// const loginPageNav=()=>{setActivePage("login");setTrigger(false);}
+
 const [email,setEmail]=useState<string>('');
 const [password,setPassword]=useState<string>('');
 

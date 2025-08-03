@@ -44,9 +44,8 @@ const onLoginMongo = async (e: React.MouseEvent<HTMLButtonElement>) => {
       console.error("Mongo login failed:", data.message);
     } else {
       console.log("Mongo user logged in:", data);
-      // Optionally: Save the token somewhere (localStorage, context, etc)
       localStorage.setItem("mongoToken", data.token);
-      mainPageNav(); // boom, takes you to the main UI
+      mainPageNav(); 
     }
   } catch (err) {
     console.error("Error hitting Mongo login endpoint:", err);

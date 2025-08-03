@@ -1,4 +1,3 @@
-// routes/users.ts
 import express from 'express'
 import requireAuth from '../middleware/requireAuth'
 import {User} from '../models/User'
